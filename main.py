@@ -94,7 +94,10 @@ class MainHandler(webapp2.RequestHandler):
             </table>
             <input type="submit">
         </form> """
-        self.response.write(build_page(form_signup))
+        error = self.request.get("error")
+        error_element = "<p class='error'>" + error +"</p>" if error else ""
+        content = form_signup + error_element
+        self.response.write(build_page(content))
 
     def post(self):
         have_error = False
@@ -122,7 +125,7 @@ class MainHandler(webapp2.RequestHandler):
             have_error = True
 
         if have_error == True:
-            error = str(params.value())
+            error = str(params.values())
             self.redirect("/?error=" + error)
         else:
             self.redirect("/welcome?username=" + username)
