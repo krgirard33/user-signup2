@@ -103,23 +103,33 @@ class MainHandler(webapp2.RequestHandler):
         verify = self.request.get("verify")
         email = self.request.get("email")
 
-        params = dict(
-            email = email,
-            username = username
-        )
+        params = dict()
 
         if not valid_username(username):
-            params['error_username'] = "Usernames must be betweet 3-20 characters, and contain only letters and numbers"
+            params['error_username'] = "Usernames must be betweet 3-20 characters long, and contain only letters and numbers"
+            have_error = True
+
+        if not valid_password(password):
+            params['error_password'] = "Passwords must be betweet 3-20 characters long"
+            have_error = True
+
+        if verify != password:
+            params['error_verify'] = "Passwords must match"
+            have_error = True
+
+        if not valid_email(email):
+            params['error_email'] = "Please enter a valid email"
             have_error = True
 
         if have_error == True:
-            self.redirect("/")
+            error = str(params.value())
+            self.redirect("/?error=" + error)
         else:
             self.redirect("/welcome?username=" + username)
 
 
 
-class WelcomeHandler(MainHandler):
+class WelcomeHandler(webapp2.RequestHandler):
     def get(self):
         username = self.request.get("username")
 
