@@ -19,7 +19,7 @@ import cgi
 import re
 
 
-def build_page(content):
+def build_page():
     page_header = """
     <!DOCTYPE html>
     <html>
@@ -38,29 +38,9 @@ def build_page(content):
     page_footer = """
         </body>
     </html> """
-    
-    return page_header + content + page_footer 
 
-
-
-USERNAME_REGEX = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
-def valid_username(username):
-    return username and USERNAME_REGEX.match(username)
-
-
-PASSWORD_REGEX = re.compile(r"^.{3,20}$")
-def valid_password(password):
-    return password and PASSWORD_REGEX.match(password)
-
-
-EMAIL_REGEX = re.compile(r"[^@\s]+@[^@\s]+\.[^@\s.]+$")
-def valid_email(email):
-    return not email or EMAIL_REGEX.match(email)
-
-class MainHandler(webapp2.RequestHandler):
-    def get(self):        
-        
-        form_signup = """
+    # html signin form 
+    form_signup = """
         <form method="post">
             <table>
                 <tr>
@@ -94,7 +74,27 @@ class MainHandler(webapp2.RequestHandler):
             </table>
             <input type="submit">
         </form> """
-        self.response.write(build_page(form_signup))
+    return page_header + form_signup + page_footer 
+
+
+
+USERNAME_REGEX = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
+def valid_username(username):
+    return username and USERNAME_REGEX.match(username)
+
+
+PASSWORD_REGEX = re.compile(r"^.{3,20}$")
+def valid_password(password):
+    return password and PASSWORD_REGEX.match(password)
+
+
+EMAIL_REGEX = re.compile(r"[^@\s]+@[^@\s]+\.[^@\s.]+$")
+def valid_email(email):
+    return not email or EMAIL_REGEX.match(email)
+
+class MainHandler(webapp2.RequestHandler):
+    def get(self):        
+        self.response.write(build_page())
 
     def post(self):
         have_error = False
@@ -108,22 +108,20 @@ class MainHandler(webapp2.RequestHandler):
             username = username
         )
 
-        if not valid_username(username):
+        if not valid_username("username"):
             params['error_username'] = "Usernames must be betweet 3-20 characters, and contain only letters and numbers"
             have_error = True
 
         if have_error == True:
-            self.redirect("/")
+            self.response.write(build_page)
         else:
             self.redirect("/welcome?username=" + username)
 
-
-
-class WelcomeHandler(MainHandler):
+def build_welcome(MainHandler):
     def get(self):
         username = self.request.get("username")
-
-        content = """
+        
+    welcome_page = """
         <!DOCTYPE html>
         <html>
             <head>
@@ -138,8 +136,14 @@ class WelcomeHandler(MainHandler):
                 </h1> 
             </body>
         </html> """
-        
-        self.response.write(build_page(content))
+    return welcome_page
+
+class WelcomeHandler(MainHandler):
+    def get(self):
+        if not valid_username:
+            self.response.write(build_page("params"))
+        else:
+            self.response.write(build_welcome(valid_username))
     
 
 
