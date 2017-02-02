@@ -67,8 +67,8 @@ class MainHandler(webapp2.RequestHandler):
         error_password = ""
         error_verify = ""
         error_email = ""
-        user_name = ""
-        user_email = ""
+        username = ""
+        email = ""
 
         form_signup = """
         <h1>
@@ -107,7 +107,7 @@ class MainHandler(webapp2.RequestHandler):
             </table>
             <input type="submit">
         </form> 
-        """% (user_name, error_username, error_password, error_verify, user_email, error_email)
+        """% (username, error_username, error_password, error_verify, email, error_email)
 
         content = form_signup 
         self.response.write(build_page(content))
@@ -118,8 +118,8 @@ class MainHandler(webapp2.RequestHandler):
         error_password = ""
         error_verify = ""
         error_email = ""
-        user_name = ""
-        user_email = ""
+        username = ""
+        email = ""
 
         have_error = False
         username = escapeHtml(self.request.get("username"))
@@ -145,7 +145,7 @@ class MainHandler(webapp2.RequestHandler):
             error_email = "Please enter a valid email"
             have_error = True
 
-        if have_error == True:
+        if have_error == True:    
             form_signup = """
             <h1>
                 <a href="/">Signup Form</a>
@@ -183,9 +183,8 @@ class MainHandler(webapp2.RequestHandler):
               </table>
             <input type="submit">
           </form> 
-          """% (user_name, error_username, error_password, error_verify, user_email, error_email)
-            username = cgi.escape(user_name)
-            email = cgi.escape(user_email) 
+          """% (username, error_username, error_password, error_verify, email, error_email)
+            
             content = form_signup
 
             self.response.write(build_page(content))
