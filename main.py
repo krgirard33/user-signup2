@@ -29,10 +29,7 @@ def build_page(content):
                 .error {color: red;}
             </style>
         </head>
-    <body>
-        <h1>
-                <a href="/">Signup Form</a>
-        </h1>  """
+    <body>  """
 
     # html boilerplate for the bottom of every page
     page_footer = """
@@ -42,7 +39,12 @@ def build_page(content):
     return page_header + content + page_footer 
 
 
+# global escape function
+def escapeHtml(input):
+    return cgi.escape(input, quote=True)
 
+
+# regular expressions
 USERNAME_REGEX = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
 def valid_username(username):
     return username and USERNAME_REGEX.match(username)
@@ -57,105 +59,160 @@ EMAIL_REGEX = re.compile(r"[^@\s]+@[^@\s]+\.[^@\s.]+$")
 def valid_email(email):
     return not email or EMAIL_REGEX.match(email)
 
+
+# Signup form
 class MainHandler(webapp2.RequestHandler):
     def get(self):        
-        
+        error_username = ""
+        error_password = ""
+        error_verify = ""
+        error_email = ""
+        user_name = ""
+        user_email = ""
+
         form_signup = """
+        <h1>
+                <a href="/">Signup Form</a>
+        </h1>
         <form method="post">
             <table>
                 <tr>
-                    <td><label for="username">Username</label></td>
+                    <td><label>Username</label></td>
                     <td>
-                        <input name="username" type="text" value="" required>
-                        <span class="error"></span>
+                        <input name="username" type="text" value="%s" />
+                        <span class="error">%s</span>
                     </td>
                 </tr>
                 <tr>
-                    <td><label for="password">Password</label></td>
+                    <td><label>Password</label></td>
                     <td>
-                        <input name="password" type="password" required>
-                        <span class="error"></span>
+                        <input name="password" type="password" />
+                        <span class="error">%s</span>
                     </td>
                 </tr>
                 <tr>
-                    <td><label for="verify">Verify Password</label></td>
+                    <td><label>Verify Password</label></td>
                     <td>
-                        <input name="verify" type="password" required>
-                        <span class="error"></span>
+                        <input name="verify" type="password" />
+                        <span class="error">%s</span>
                     </td>
                 </tr>
                 <tr>
-                    <td><label for="email">Email (optional)</label></td>
+                    <td><label>Email (optional)</label></td>
                     <td>
-                        <input name="email" type="email" value="">
-                        <span class="error"></span>
+                        <input name="email" type="email" value="%s"/>
+                        <span class="error">%s</span>
                     </td>
                 </tr>
             </table>
             <input type="submit">
-        </form> """
-        error = self.request.get("error")
-        error_element = "<p class='error'>" + error +"</p>" if error else ""
-        content = form_signup + error_element
+        </form> 
+        """% (user_name, error_username, error_password, error_verify, user_email, error_email)
+
+        content = form_signup 
         self.response.write(build_page(content))
 
-    def post(self):
-        have_error = False
-        username = self.request.get("username")
-        password = self.request.get("password")
-        verify = self.request.get("verify")
-        email = self.request.get("email")
 
-        params = dict()
+    def post(self):
+        error_username = ""
+        error_password = ""
+        error_verify = ""
+        error_email = ""
+        user_name = ""
+        user_email = ""
+
+        have_error = False
+        username = escapeHtml(self.request.get("username"))
+        password = escapeHtml(self.request.get("password"))
+        verify = escapeHtml(self.request.get("verify"))
+        email = escapeHtml(self.request.get("email"))
+
+        
 
         if not valid_username(username):
-            params['error_username'] = "Usernames must be betweet 3-20 characters long, and contain only letters and numbers"
+            error_username = "Usernames must be betweet 3-20 characters long, and contain only letters and numbers"
             have_error = True
 
         if not valid_password(password):
-            params['error_password'] = "Passwords must be betweet 3-20 characters long"
+            error_password = "Passwords must be betweet 3-20 characters long"
             have_error = True
 
         if verify != password:
-            params['error_verify'] = "Passwords must match"
+            error_verify = "Passwords must match"
             have_error = True
 
         if not valid_email(email):
-            params['error_email'] = "Please enter a valid email"
+            error_email = "Please enter a valid email"
             have_error = True
 
         if have_error == True:
-            error = str(params.values())
-            self.redirect("/?error=" + error)
+            form_signup = """
+            <h1>
+                <a href="/">Signup Form</a>
+            </h1>
+            <form method="post">
+                <table>
+                    <tr>
+                      <td><label>Username</label></td>
+                      <td>
+                        <input name="username" type="text" value="%s" />
+                        <span class="error">%s</span>
+                     </td>
+                  </tr>
+                  <tr>
+                    <td><label>Password</label></td>
+                    <td>
+                        <input name="password" type="password" />
+                        <span class="error">%s</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><label>Verify Password</label></td>
+                    <td>
+                        <input name="verify" type="password" />
+                        <span class="error">%s</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><label>Email (optional)</label></td>
+                    <td>
+                        <input name="email" type="email" value="%s"/>
+                        <span class="error">%s</span>
+                    </td>
+                  </tr>
+              </table>
+            <input type="submit">
+          </form> 
+          """% (user_name, error_username, error_password, error_verify, user_email, error_email)
+            username = cgi.escape(user_name)
+            email = cgi.escape(user_email) 
+            content = form_signup
+
+            self.response.write(build_page(content))
+
         else:
-            self.redirect("/welcome?username=" + username)
+            username_welcome = username
+            self.redirect("/welcome?username=%s" % username_welcome)
 
 
-
+# Welcome page for after succesful signup
 class WelcomeHandler(webapp2.RequestHandler):
     def get(self):
-        username = self.request.get("username")
+        username_welcome = self.request.get("username")
+        escaped_username = escapeHtml(username_welcome)
 
         content = """
-        <!DOCTYPE html>
-        <html>
             <head>
                 <title>Welcome Page</title>
-                <style type="text/css"> 
-                     .error {color: red;}
-                </style>
             </head>
             <body>
                 <h1>
-                    Welcome, """ + username + """!                
+                    Welcome, """ + escaped_username + """!                
                 </h1> 
-            </body>
-        </html> """
+            """
         
         self.response.write(build_page(content))
     
-
-
 
 app = webapp2.WSGIApplication([
     ('/', MainHandler), 
